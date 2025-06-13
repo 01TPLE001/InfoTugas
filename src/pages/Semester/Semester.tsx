@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { Atom } from "react-loading-indicators";
+import { ThreeDot } from "react-loading-indicators";
 import { useNavigate } from "react-router-dom";
+import AlertCard from "../../components/Alert/alert";
 
 interface Semester {
   semester_id: number;
@@ -17,6 +18,7 @@ export default function Semester() {
   const [editValue, setEditValue] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
@@ -35,30 +37,31 @@ export default function Semester() {
       const res = await axios.get(`${API_URL}/semester`);
       setSemesters(res.data.data);
     } catch (err) {
-      alert("Gagal mengambil data semester");
+      console.error("Gagal mengambil data semester:", err);
+  
     }
     setLoading(false);
   };
 
   const handleAddSemester = async () => {
     if (!newSemester) {
-      alert("Semester tidak boleh kosong");
+      setAlertMsg("Semester tidak boleh kosong");
       return;
     }
     if (isNaN(Number(newSemester))) {
-      alert("Semester harus berupa angka");
+      setAlertMsg("Semester harus berupa angka");
       return;
     }
     const isSemesterExists = semesters.some(
       (s) => s.semester_number === Number(newSemester)
     );
     if (isSemesterExists) {
-      alert("Semester sudah ada");
+      setAlertMsg("Semester sudah ada");
       return;
     }
     const token = Cookies.get("token");
     if (!token) {
-      alert("Token login tidak ditemukan. Silakan login ulang.");
+      setAlertMsg("Token login tidak ditemukan. Silakan login ulang.");
       return;
     }
     try {
@@ -75,7 +78,7 @@ export default function Semester() {
       setNewSemester("");
       fetchSemesters();
     } catch (err: any) {
-      alert("Gagal menambah semester");
+      setAlertMsg("Gagal menambah semester");
     }
   };
 
@@ -84,7 +87,7 @@ export default function Semester() {
     if (!deleteId) return;
     const token = Cookies.get("token");
     if (!token) {
-      alert("Token login tidak ditemukan. Silakan login ulang.");
+      setAlertMsg("Token login tidak ditemukan. Silakan login ulang.");
       return;
     }
     try {
@@ -98,7 +101,7 @@ export default function Semester() {
       setDeleteId(null);
       fetchSemesters();
     } catch (err: any) {
-      alert("Gagal menghapus semester");
+      setAlertMsg("Gagal menghapus semester");
     }
   };
 
@@ -114,12 +117,12 @@ export default function Semester() {
 
   const saveEdit = async (semester_id: number) => {
     if (!editValue || isNaN(Number(editValue))) {
-      alert("Semester harus berupa angka");
+      setAlertMsg("Semester harus berupa angka");
       return;
     }
     const token = Cookies.get("token");
     if (!token) {
-      alert("Token login tidak ditemukan. Silakan login ulang.");
+      setAlertMsg("Token login tidak ditemukan. Silakan login ulang.");
       return;
     }
     try {
@@ -137,12 +140,20 @@ export default function Semester() {
       setEditValue("");
       fetchSemesters();
     } catch (err: any) {
-      alert("Gagal update semester");
+      setAlertMsg("Gagal update semester");
     }
   };
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
+      <h1 className="text-2xl font-bold mb-2 text-gray-950 dark:text-white margin">Atmint Dashboard</h1>
+      <hr
+        style={{
+          border: "none",
+          height: "2px",
+          backgroundColor: "#333",
+        }}
+      />
       <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Semester</h2>
       <div className="flex gap-2 mb-4">
         <input
@@ -160,7 +171,7 @@ export default function Semester() {
       </div>
 
       {loading && (
-        <Atom color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} text="LOADING" />
+<ThreeDot color="#32cd32" size="medium" text="" textColor="" />
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -254,7 +265,11 @@ export default function Semester() {
           </div>
         </div>
       )}
-
+    <AlertCard
+      open={!!alertMsg}
+      message={alertMsg}
+      onClose={() => setAlertMsg(null)}
+    />
       {/* Animasi fade-in-up */}
       <style>
         {`

@@ -3,6 +3,7 @@ import { Outlet } from "react-router";
 import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
+import FloatingNav from "./FloatingNav";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -31,6 +32,7 @@ const AppLayout: React.FC = () => {
   return (
     <SidebarProvider>
       <LayoutContent />
+      <FloatingNav />
     </SidebarProvider>
   );
 };

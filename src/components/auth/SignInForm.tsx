@@ -7,9 +7,8 @@ import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { API_URL } from "../../utils/APIURL";
 
-// Define your API URL here or import it from a config file
-const API_URL = import.meta.env.VITE_API_URL;
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,13 +31,18 @@ export default function SignInForm() {
       const data = res.data;
       if (res.status === 200 && data.token) {
         Cookies.set("token", data.token, { expires: isChecked ? 7 : undefined });
-        window.location.href = "/";
+        window.location.href = "/semester"; 
+
+        // cookies get("token") && window.location.reload();
+
+
+
       } else if (data.message) {
         const msg = data.message.toLowerCase();
         if (msg.includes("password")) {
           setError("Password salah");
         } else if (msg.includes("nim") || msg.includes("user")) {
-          setError("User tidak ditemukan");
+          setError("Nim Atau Password salah");
         } else {
           setError(data.message || "Login gagal");
         }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { Atom } from "react-loading-indicators";
+import { ThreeDot } from "react-loading-indicators";
 import { useNavigate, useParams } from "react-router-dom";
+import AlertCard from "../../components/Alert/alert"; 
 
 interface Week {
   week_id: number;
@@ -10,6 +11,7 @@ interface Week {
 }
 
 export default function WeekPage() {
+  const { semesterId } = useParams(); // pastikan route kamu mengandung :semesterId
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [newWeek, setNewWeek] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,12 +19,13 @@ export default function WeekPage() {
   const [editValue, setEditValue] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  const { semesterId } = useParams(); // sudah ada di kode kamu
 
   useEffect(() => {
+    console.log("semesterId:", semesterId);
     if (semesterId) fetchWeeks(semesterId);
   }, [semesterId]);
 
@@ -34,65 +37,56 @@ export default function WeekPage() {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/week/${id}`);
-      // Pastikan data selalu array
       const data = Array.isArray(res.data.data) ? res.data.data : [];
       setWeeks(data);
     } catch (err) {
-      setWeeks([]); // Jika error, tetap set array kosong agar halaman tetap tampil
-      alert("Gagal mengambil data week");
+      setWeeks([]);
+      setAlertMsg("Gagal mengambil data week");
     }
     setLoading(false);
   };
 
   const handleAddWeek = async () => {
     if (!newWeek) {
-      alert("Week tidak boleh kosong");
+      setAlertMsg("Week tidak boleh kosong");
       return;
     }
-    if (isNaN(Number(newWeek))) {
-      alert("Week harus berupa angka");
-      return;
-    }
-    const isWeekExists = weeks.some(
-      (w) => w.week_number === Number(newWeek)
-    );
-    if (isWeekExists) {
-      alert("Week sudah ada");
-      return;
-    }
-    const token = Cookies.get("token");
-    if (!token) {
-      alert("Token login tidak ditemukan. Silakan login ulang.");
+    if (!semesterId) {
+      setAlertMsg("Semester belum dipilih");
       return;
     }
     try {
+      console.log("POST", { week_number: Number(newWeek), semester_id: Number(semesterId) });
       await axios.post(
         `${API_URL}/week/`,
-        { week_number: Number(newWeek) },
         {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+          week_number: Number(newWeek),
+          semester_id: Number(semesterId),
+        },
+        {
+          headers: { Authorization: `Bearer ${Cookies.get("token")}` },
         }
       );
       setNewWeek("");
-      fetchWeeks(semesterId!);
+      fetchWeeks(semesterId);
     } catch (err: any) {
-      alert("Gagal menambah week");
+      setAlertMsg(
+        err?.response?.data?.message ||
+        "Gagal menambah week"
+      );
     }
   };
 
-  // Modal konfirmasi hapus
+
   const handleDeleteWeek = async () => {
     if (!deleteId) return;
     const token = Cookies.get("token");
     if (!token) {
-      alert("Token login tidak ditemukan. Silakan login ulang.");
+      setAlertMsg("Token login tidak ditemukan. Silakan login ulang.");
       return;
     }
     try {
-      await axios.delete(`${API_URL}/week/${deleteId}`, {
+      await axios.delete(`${API_URL}/week/${semesterId}/${deleteId}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
@@ -102,7 +96,7 @@ export default function WeekPage() {
       setDeleteId(null);
       fetchWeeks(semesterId!);
     } catch (err: any) {
-      alert("Gagal menghapus week");
+      setAlertMsg("Gagal menghapus week");
     }
   };
 
@@ -118,12 +112,12 @@ export default function WeekPage() {
 
   const saveEdit = async (week_id: number) => {
     if (!editValue || isNaN(Number(editValue))) {
-      alert("Week harus berupa angka");
+      setAlertMsg("Week harus berupa angka");
       return;
     }
     const token = Cookies.get("token");
     if (!token) {
-      alert("Token login tidak ditemukan. Silakan login ulang.");
+      setAlertMsg("Token login tidak ditemukan. Silakan login ulang.");
       return;
     }
     try {
@@ -141,12 +135,20 @@ export default function WeekPage() {
       setEditValue("");
       fetchWeeks(semesterId!);
     } catch (err: any) {
-      alert("Gagal update week");
+      setAlertMsg("Gagal update week");
     }
   };
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
+      <h1 className="text-2xl font-bold mb-2 text-gray-950 dark:text-white margin">Atmint Dashboard</h1>
+      <hr
+        style={{
+          border: "none",
+          height: "2px",
+          backgroundColor: "#333",
+        }}
+      />
       <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Week</h2>
       <div className="flex gap-2 mb-4">
         <input
@@ -164,7 +166,7 @@ export default function WeekPage() {
       </div>
 
       {loading && (
-        <Atom color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} text="LOADING" />
+<ThreeDot color="#32cd32" size="medium" text="" textColor="" />
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -258,6 +260,13 @@ export default function WeekPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Alert */}
+      <AlertCard
+        open={!!alertMsg}
+        message={alertMsg}
+        onClose={() => setAlertMsg(null)}
+      />
 
       {/* Animasi fade-in-up */}
       <style>

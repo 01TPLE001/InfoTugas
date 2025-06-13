@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-import { Atom } from "react-loading-indicators";
+import { ThreeDot } from "react-loading-indicators";
 
 interface Week {
   week_id: number;
   week_number: number;
+  semester_id: number;
+  semester_number: number;
+}
+
+interface Semester {
   semester_id: number;
   semester_number: number;
 }
@@ -23,38 +27,41 @@ export default function WeekSidebar() {
 
   const fetchAllWeeksFromAllSemesters = async () => {
     setLoading(true);
-    const totalSemester = 100; // Ganti sesuai jumlah semester di postman
     const allWeeks: Week[] = [];
 
-    for (let semesterId = 1; semesterId <= totalSemester; semesterId++) {
-      try {
-        const res = await axios.get(`${API_URL}/week/${semesterId}`);
-        if (Array.isArray(res.data.data)) {
-          // Tambahkan semester_number ke setiap week jika belum ada
-          const weeksWithSemester = res.data.data.map((w: any) => ({
-            ...w,
-            semester_id: semesterId,
-            semester_number: w.semester_number ?? semesterId, // fallback jika backend tidak kirim semester_number
-          }));
-          allWeeks.push(...weeksWithSemester);
+    try {
+      const semesterRes = await axios.get(`${API_URL}/semester`);
+      const semesters: Semester[] = semesterRes.data.data;
+
+      for (const semester of semesters) {
+        try {
+          const res = await axios.get(`${API_URL}/week/${semester.semester_id}`);
+          if (Array.isArray(res.data.data)) {
+            const weeksWithSemester = res.data.data.map((w: any) => ({
+              ...w,
+              semester_id: semester.semester_id,
+              semester_number: w.semester_number ?? semester.semester_number ?? semester.semester_id,
+            }));
+            allWeeks.push(...weeksWithSemester);
+          }
+        } catch (error) {
+          console.error(`Gagal fetch week untuk semester ${semester.semester_id}`, error);
         }
-      } catch (error) {
-        console.error(`Gagal fetch semester ${semesterId}`, error);
       }
+
+      allWeeks.sort(
+        (a, b) =>
+          a.semester_number - b.semester_number ||
+          a.week_number - b.week_number
+      );
+      setWeeks(allWeeks);
+    } catch (error) {
+      console.error("Gagal mengambil daftar semester", error);
+    } finally {
+      setLoading(false);
     }
-
-    // Urutkan berdasarkan semester_number dan week_number
-    allWeeks.sort(
-      (a, b) =>
-        a.semester_number - b.semester_number ||
-        a.week_number - b.week_number
-    );
-
-    setWeeks(allWeeks);
-    setLoading(false);
   };
 
-  // Kelompokkan week berdasarkan semester_number
   const groupedWeeks = weeks.reduce((acc: Record<number, Week[]>, week) => {
     if (!acc[week.semester_number]) acc[week.semester_number] = [];
     acc[week.semester_number].push(week);
@@ -66,9 +73,9 @@ export default function WeekSidebar() {
       <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
         Semua Week
       </h2>
-      {loading && <div>      {loading && (
-        <Atom color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} text="LOADING" />
-      )}</div>}
+      {loading && (
+      <ThreeDot color="#32cd32" size="medium" text="" textColor="" />
+      )}
       {Object.keys(groupedWeeks).length > 0 ? (
         Object.keys(groupedWeeks)
           .sort((a, b) => Number(a) - Number(b))

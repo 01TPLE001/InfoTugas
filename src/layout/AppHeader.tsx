@@ -95,7 +95,7 @@ const AppHeader: React.FC = () => {
               alt="Logo"
               style={{ width: "40px", height: "40px" }}
             />
-            <span className="text-lg font-bold text-gray-800 dark:text-white">Admin Dashboard</span>
+            <span className="text-lg font-bold text-gray-800 dark:text-white">Info Tugas</span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-3">
@@ -112,7 +112,7 @@ const AppHeader: React.FC = () => {
                 alt="Logo"
                 style={{ width: "40px", height: "40px" }}
               />
-              <span className="text-xl font-bold text-gray-800 dark:text-white">Admin Dashboard</span>
+              <span className="text-xl font-bold text-gray-800 dark:text-white">Info Tugas</span>
             </Link>
           </div>
 
