@@ -2,12 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
-import Videos from "./pages/UiElements/Videos";
-import Images from "./pages/UiElements/Images";
-import Alerts from "./pages/UiElements/Alerts";
-import Badges from "./pages/UiElements/Badges";
-import Avatars from "./pages/UiElements/Avatars";
-import Buttons from "./pages/UiElements/Buttons";
+
 import TaskPage from "./pages/task/Task";
 import Calendar from "./pages/Calendar";
 import SemesterUser from "./pages/Semester/SemesterUser";
@@ -21,6 +16,7 @@ import WeekUserPage from "./pages/Week/Weekuser";
 import TaskUserPage from "./pages/task/Taskuser";
 import EmailSidebar from "./pages/Email/EmailSidebar";
 import MatkulSidebar from "./pages/Matkul/MatkulSidebar";
+
 export default function App() {
   return (
     <>
@@ -31,7 +27,7 @@ export default function App() {
           <Route path="/signin" element={<SignIn />} />
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route path="/semester" element={<Semester />} />
+          <Route path="/semester" element={<Semester />} />
             <Route path="/week" element={<WeekSidebar />} />
             <Route path="/week/:semesterId" element={<WeekPage />} />
             <Route path="/task/:semesterId/:weekId" element={<TaskPage />} />
@@ -54,12 +50,6 @@ export default function App() {
             <Route path="/blank" element={<Blank />} />
 
             {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
           </Route>
 
           {/* Auth Layout */}

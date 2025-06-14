@@ -8,6 +8,7 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
+  MailIcon
   // ListIcon,
   // PageIcon,
   // PieChartIcon,
@@ -39,7 +40,7 @@ const navItems: NavItem[] = [
   },
 
     {
-    icon: <BoxCubeIcon />,
+    icon: <MailIcon />,
     name: "Email",
     path: "/email",
   },
@@ -57,11 +58,11 @@ const navItems: NavItem[] = [
   //     { name: "404 Error", path: "/error-404", pro: false },
   //   ],
   // },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
+  // {
+  //   icon: <CalenderIcon />,
+  //   name: "Calendar",
+  //   path: "/calendar",
+  // },
 ];
 
 const othersItems: NavItem[] = [
