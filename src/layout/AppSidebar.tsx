@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-
+import Cookies from "js-cookie";
 // Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
@@ -25,31 +25,42 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
+  const role = Cookies.get("role");
+
 const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "SEMESTER",
-    path: "/semester",
-    subItems: [{ name: "Pilih Semester", path: "/semester", pro: false }],
-  },
+{
+      icon: <GridIcon />,
+      name: "SEMESTER",
+      path: role === "admin" ? "/semester" : "/semester-user",
+      subItems: [
+        {
+          name: "Pilih Semester",
+          path: role === "admin" ? "/semester" : "/semester-user",
+          pro: false,
+        },
+      ],
+    },
   {
     name: "WEEK",
     icon: <BoxCubeIcon />,
     path: "/week",
     subItems: [{ name: "Pilih Minggu", path: "/week", pro: false }],
   },
-
-    {
-    icon: <MailIcon />,
-    name: "Email",
-    path: "/email",
-  },
-
-      {
-    icon: <BoxCubeIcon />,
-    name: "Matkul",
-    path: "/matkul",
-  },
+   ...(role === "admin"
+      ? [
+          {
+            icon: <MailIcon />,
+            name: "Email",
+            path: "/email",
+          },
+          {
+            icon: <BoxCubeIcon />,
+            name: "Matkul",
+            path: "/matkul",
+          },
+        ]
+      : []),
+  ];
   // {
   //   name: "Pages",
   //   icon: <PageIcon />,
@@ -63,7 +74,7 @@ const navItems: NavItem[] = [
   //   name: "Calendar",
   //   path: "/calendar",
   // },
-];
+
 
 const othersItems: NavItem[] = [
   // {
@@ -315,7 +326,22 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/" className="flex items-center">
+
+        
+        <div
+  className="flex items-center cursor-pointer"
+  onClick={() => {
+    const token = Cookies.get("token");
+    const role = Cookies.get("role");
+    if (token && role === "admin") {
+      navigate("/semester");
+    } else if (token && role === "user") {
+      navigate("/semester-user");
+    } else {
+      navigate("/");
+    }
+  }}
+>
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img
@@ -344,7 +370,7 @@ const AppSidebar: React.FC = () => {
               height={32}
             />
           )}
-        </Link>
+        </div>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">

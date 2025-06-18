@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { ThreeDot } from "react-loading-indicators";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 interface Semester {
   semester_id: number;
@@ -30,8 +31,14 @@ export default function Semester() {
       return;
     }
     setLoading(true);
+    const token = Cookies.get("token");
     try {
-      const res = await axios.get(`${API_URL}/semester`);
+      const res = await axios.get(`${API_URL}/semester`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
       setSemesters(res.data.data);
     } catch (err) {
       console.error("Gagal mengambil data semester:", err);

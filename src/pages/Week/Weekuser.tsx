@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-// import Cookies from "js-cookie"; // ADMIN ONLY
+import Cookies from "js-cookie";
 import { ThreeDot } from "react-loading-indicators";
 
 interface Week {
@@ -22,17 +22,22 @@ export default function WeekUserPage() {
     if (semesterId) fetchWeeks(semesterId);
   }, [semesterId]);
 
-  const fetchWeeks = async (id: string | number) => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_URL}/week/${id}`);
-      setWeeks(Array.isArray(res.data.data) ? res.data.data : []);
-    } catch {
-      setWeeks([]);
-    }
-    setLoading(false);
-  };
-
+const fetchWeeks = async (id: string | number) => {
+  setLoading(true);
+  try {
+    const token = Cookies.get("token");
+    const res = await axios.get(`${API_URL}/week/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    setWeeks(Array.isArray(res.data.data) ? res.data.data : []);
+  } catch {
+    setWeeks([]);
+  }
+  setLoading(false);
+};
   // ADMIN ONLY: Tambah week
   // const [newWeek, setNewWeek] = useState("");
   // const handleAddWeek = async () => { ... }

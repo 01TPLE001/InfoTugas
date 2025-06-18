@@ -27,14 +27,22 @@ export default function Semester() {
     fetchSemesters();
   }, []);
 
+  // token
+ 
   const fetchSemesters = async () => {
     if (!API_URL) {
       console.error("API_URL tidak ditemukan");
       return;
     }
     setLoading(true);
+    const token = Cookies.get("token");
     try {
-      const res = await axios.get(`${API_URL}/semester`);
+      const res = await axios.get(`${API_URL}/semester`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
       setSemesters(res.data.data);
     } catch (err) {
       console.error("Gagal mengambil data semester:", err);

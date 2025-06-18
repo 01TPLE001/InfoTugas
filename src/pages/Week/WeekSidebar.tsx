@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ThreeDot } from "react-loading-indicators";
+import Cookies from "js-cookie";
 
 interface Week {
   week_id: number;
@@ -28,14 +29,24 @@ export default function WeekSidebar() {
   const fetchAllWeeksFromAllSemesters = async () => {
     setLoading(true);
     const allWeeks: Week[] = [];
+    const token = Cookies.get("token");
 
     try {
-      const semesterRes = await axios.get(`${API_URL}/semester`);
+      const semesterRes = await axios.get(`${API_URL}/semester`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const semesters: Semester[] = semesterRes.data.data;
 
       for (const semester of semesters) {
         try {
-          const res = await axios.get(`${API_URL}/week/${semester.semester_id}`);
+          const res = await axios.get(`${API_URL}/week/${semester.semester_id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           if (Array.isArray(res.data.data)) {
             const weeksWithSemester = res.data.data.map((w: any) => ({
               ...w,
@@ -74,7 +85,7 @@ export default function WeekSidebar() {
         Semua Week
       </h2>
       {loading && (
-      <ThreeDot color="#32cd32" size="medium" text="" textColor="" />
+        <ThreeDot color="#32cd32" size="medium" text="" textColor="" />
       )}
       {Object.keys(groupedWeeks).length > 0 ? (
         Object.keys(groupedWeeks)
@@ -89,7 +100,16 @@ export default function WeekSidebar() {
                   <div
                     key={w.week_id}
                     className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 rounded shadow cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
-                    onClick={() => navigate(`/task/${w.semester_id}/${w.week_id}`)}
+                    onClick={() => {
+                      const role = Cookies.get("role");
+                      if (role === "admin") {
+                        navigate(`/task/${w.semester_id}/${w.week_id}`);
+                      } else if (role === "user") {
+                        navigate(`/task-user/${w.semester_id}/${w.week_id}`);
+                      } else {
+                        navigate("/");
+                      }
+                    }}
                   >
                     <span className="text-xs text-blue-500">Week {w.week_number}</span>
                   </div>

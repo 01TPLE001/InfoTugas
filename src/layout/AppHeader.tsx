@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
-  
+
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-
+  const navigate = useNavigate();
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
       toggleSidebar();
@@ -24,6 +25,19 @@ const AppHeader: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const token = Cookies.get("token");
+    const role = Cookies.get("role");
+
+    if (!token) {
+      navigate("/", { replace: true });
+    } else {
+      // Jika token ada, redirect berdasarkan role
+      if (role === "admin") {
+        navigate("/semester", { replace: true });
+      } else if (role === "user") {
+        navigate("/semester-user", { replace: true });
+      }
+    }
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
@@ -80,9 +94,22 @@ const AppHeader: React.FC = () => {
             )}
             {/* Cross Icon */}
           </button>
-
           {/* Logo dan Judul (Mobile & Desktop) */}
-          <Link to="/" className="flex items-center gap-3 lg:hidden">
+
+          <span
+            className="flex items-center gap-3 lg:hidden cursor-pointer"
+            onClick={() => {
+              const token = Cookies.get("token");
+              const role = Cookies.get("role");
+              if (token && role === "admin") {
+                navigate("/semester");
+              } else if (token && role === "user") {
+                navigate("/semester-user");
+              } else {
+                navigate("/");
+              }
+            }}
+          >
             <img
               className="dark:hidden"
               src="./images/logo/auth-logo.svg"
@@ -95,27 +122,44 @@ const AppHeader: React.FC = () => {
               alt="Logo"
               style={{ width: "40px", height: "40px" }}
             />
-            <span className="text-lg font-bold text-gray-800 dark:text-white">Info Tugas</span>
-          </Link>
-
-          <div className="hidden lg:flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                className="dark:hidden"
-                src="./images/logo/auth-logo.svg"
-                alt="Logo"
-                style={{ width: "40px", height: "40px" }}
-              />
-              <img
-                className="hidden dark:block"
-                src="./images/logo/auth-logo.svg"
-                alt="Logo"
-                style={{ width: "40px", height: "40px" }}
-              />
-              <span className="text-xl font-bold text-gray-800 dark:text-white">Info Tugas</span>
-            </Link>
+            <span className="text-lg font-bold text-gray-800 dark:text-white">
+              Info Tugas
+            </span>
+          </span>
+          <div
+            className="hidden lg:flex items-center gap-3 cursor-pointer"
+            onClick={() => {
+              const token = Cookies.get("token");
+              const role = Cookies.get("role");
+              if (token && role === "admin") {
+                navigate("/semester");
+              } else if (token && role === "user") {
+                navigate("/semester-user");
+              } else {
+                navigate("/");
+              }
+            }}
+          >
+            <img
+              className="dark:hidden"
+              src="./images/logo/auth-logo.svg"
+              alt="Logo"
+              style={{ width: "40px", height: "40px" }}
+            />
+            <img
+              className="hidden dark:block"
+              src="./images/logo/auth-logo.svg"
+              alt="Logo"
+              style={{ width: "40px", height: "40px" }}
+            />
+            <span className="text-xl font-bold text-gray-800 dark:text-white">
+              Info Tugas
+            </span>
           </div>
+          <div className="hidden lg:flex items-center gap-3">
 
+
+          </div>
           <button
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
@@ -135,10 +179,7 @@ const AppHeader: React.FC = () => {
               />
             </svg>
           </button>
-
-          <div className="hidden lg:block">
-
-          </div>
+          <div className="hidden lg:block"></div>
         </div>
         <div
           className={`${

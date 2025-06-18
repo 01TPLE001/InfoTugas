@@ -16,6 +16,7 @@ import TaskUserPage from "./pages/task/Taskuser";
 import EmailSidebar from "./pages/Email/EmailSidebar";
 import MatkulSidebar from "./pages/Matkul/MatkulSidebar";
 import ProtectedRoute from "./protectroute";
+import EmailSidebarUser from "./pages/Email/EmailSidebarUser";
 
 export default function App() {
   return (
@@ -28,10 +29,11 @@ export default function App() {
 
         {/* Protected Routes inside Dashboard Layout */}
         <Route element={<AppLayout />}>
+          <Route path="/email-user" element={<EmailSidebarUser />} />
           <Route
             path="/semester"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="admin">
                 <Semester />
               </ProtectedRoute>
             }
@@ -39,7 +41,7 @@ export default function App() {
           <Route
             path="/week"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute> 
                 <WeekSidebar />
               </ProtectedRoute>
             }
@@ -47,7 +49,7 @@ export default function App() {
           <Route
             path="/week/:semesterId"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="admin">
                 <WeekPage />
               </ProtectedRoute>
             }
@@ -55,7 +57,7 @@ export default function App() {
           <Route
             path="/task/:semesterId/:weekId"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="admin">
                 <TaskPage />
               </ProtectedRoute>
             }
@@ -63,7 +65,7 @@ export default function App() {
           <Route
             path="/email"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="admin">
                 <EmailSidebar />
               </ProtectedRoute>
             }
@@ -71,15 +73,17 @@ export default function App() {
           <Route
             path="/matkul"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="admin">
                 <MatkulSidebar />
               </ProtectedRoute>
             }
           />
+
+          {/* user page */}
           <Route
             path="/semester-user"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="user">
                 <SemesterUser />
               </ProtectedRoute>
             }
@@ -87,7 +91,7 @@ export default function App() {
           <Route
             path="/week-user/:semesterId"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="user">
                 <WeekUserPage />
               </ProtectedRoute>
             }
@@ -95,7 +99,7 @@ export default function App() {
           <Route
             path="/task-user/:semesterId/:weekId"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute role="user">
                 <TaskUserPage />
               </ProtectedRoute>
             }
@@ -105,7 +109,7 @@ export default function App() {
           <Route path="/profile" element={<UserProfiles />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/blank" element={<Blank />} />
-        </Route>
+        </Route>user
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />

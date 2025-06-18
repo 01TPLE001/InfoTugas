@@ -9,7 +9,6 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { API_URL } from "../../utils/APIURL";
 
-
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -22,27 +21,50 @@ export default function SignInForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
       const res = await axios.post(
         `${API_URL}/user/auth/login`,
-        { nim, password },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          nim: Number(nim),
+          password: password,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
       );
+
       const data = res.data;
       if (res.status === 200 && data.token) {
-        Cookies.set("token", data.token, { expires: isChecked ? 7 : undefined });
-        window.location.href = "/semester"; 
+        const token = data.token;
+        Cookies.set("token", token, { expires: isChecked ? 7 : undefined });
 
-        // cookies get("token") && window.location.reload();
+        const verifyRes = await axios.get(`${API_URL}/user/verify`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        const role = verifyRes.data?.data; // "admin" atau "user"
+        Cookies.set("role", role);
 
+  console.log("Token dari login:", token);
+  console.log("Role dari /user/verify:", role);
+  console.log("Token di cookies:", Cookies.get("token"));
+  console.log("Role di cookies:", Cookies.get("role"));
 
+        if (role === "admin") {
+          window.location.replace("/semester");
+        } else {
+          window.location.replace("/semester-user");
+        }
+        return;
       } else if (data.message) {
         const msg = data.message.toLowerCase();
         if (msg.includes("password")) {
           setError("Password salah");
         } else if (msg.includes("nim") || msg.includes("user")) {
-          setError("Nim Atau Password salah");
+          setError("Nim atau Password salah");
         } else {
           setError(data.message || "Login gagal");
         }
@@ -59,22 +81,18 @@ export default function SignInForm() {
         setError("Terjadi kesalahan");
       }
     }
+
     setLoading(false);
   };
 
   return (
     <div
-      className="
-      flex flex-col flex-1 min-h-screen justify-center items-center relative
-      bg-left bg-no-repeat bg-cover
-      bg-[url('/images/background/klh.png')]
-      dark:bg-[url('/images/background/klhn.png')]
-    "
+      className="flex flex-col flex-1 min-h-screen justify-center items-center relative
+        bg-left bg-no-repeat bg-cover
+        bg-[url('/images/background/klh.png')]
+        dark:bg-[url('/images/background/klhn.png')]"
     >
-      {/* Overlay agar background lebih gelap */}
       <div className="absolute inset-0 bg-black/60 dark:bg-black/30 z-0" />
-
-      {/* Card login di atas overlay */}
       <div className="w-full max-w-md pt-10 mx-auto relative z-10">
         <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto bg-white dark:bg-gray-900 px-6 py-10 rounded-lg shadow-lg mt-6">
           <Link
@@ -84,6 +102,7 @@ export default function SignInForm() {
             <ChevronLeftIcon className="size-5" />
             Kembali ke dashboard
           </Link>
+
           <div>
             <div className="mb-5 sm:mb-8">
               <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
@@ -93,93 +112,88 @@ export default function SignInForm() {
                 Masukkan NIM dan kata sandi untuk masuk!
               </p>
             </div>
-            <div>
-              <div className="relative py-3 sm:py-5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+
+            <form onSubmit={handleLogin}>
+              <div className="space-y-6">
+                <div>
+                  <Label>
+                    NIM <span className="text-error-500">*</span>
+                  </Label>
+                  <Input
+                    placeholder="241011xxxx"
+                    value={nim}
+                    onChange={(e) => setNim(e.target.value)}
+                  />
                 </div>
-              </div>
-              <form onSubmit={handleLogin}>
-                <div className="space-y-6">
-                  <div>
-                    <Label>
-                      NIM <span className="text-error-500">*</span>{" "}
-                    </Label>
+                <div>
+                  <Label>
+                    Kata Sandi <span className="text-error-500">*</span>
+                  </Label>
+                  <div className="relative">
                     <Input
-                      placeholder="241011xxxx"
-                      value={nim}
-                      onChange={(e) => setNim(e.target.value)}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Masukkan kata sandi"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
-                  </div>
-                  <div>
-                    <Label>
-                      Kata Sandi <span className="text-error-500">*</span>{" "}
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Masukkan kata sandi"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <span
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                      >
-                        {showPassword ? (
-                          <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                        ) : (
-                          <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Checkbox checked={isChecked} onChange={setIsChecked} />
-                      <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                        Tetap masuk
-                      </span>
-                    </div>
-                    <Link
-                      to="/reset-password"
-                      className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                    <span
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                     >
-                      Lupa kata sandi?
-                    </Link>
-                  </div>
-                  {error && (
-                    <div className="text-error-500 text-sm">{error}</div>
-                  )}
-                  <div>
-                    <Button className="w-full" size="sm" disabled={loading}>
-                      {loading ? "Loading..." : "Masuk"}
-                    </Button>
+                      {showPassword ? (
+                        <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                      ) : (
+                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                      )}
+                    </span>
                   </div>
                 </div>
-              </form>
-              {/* Hubungi admin untuk daftar */}
-              <div className="mt-5">
-                <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                  Hubungi admin untuk daftar
-                </p>
-                <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Checkbox checked={isChecked} onChange={setIsChecked} />
+                    <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
+                      Tetap masuk
+                    </span>
+                  </div>
                   <Link
-                    to="https://github.com/NandaCoba"
-                    className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                    to="/reset-password"
+                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                   >
-                    Ananda Lukman
+                    Lupa kata sandi?
                   </Link>
-                </p>
-                <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                  <Link
-                    to="https://github.com/triioade"
-                    className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                  >
-                    Trio Ade
-                  </Link>
-                </p>
+                </div>
+
+                {error && <div className="text-error-500 text-sm">{error}</div>}
+
+                <div>
+                  <Button className="w-full" size="sm" disabled={loading}>
+                    {loading ? "Loading..." : "Masuk"}
+                  </Button>
+                </div>
               </div>
+            </form>
+
+            <div className="mt-5">
+              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+                Hubungi admin untuk daftar
+              </p>
+              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+                <Link
+                  to="https://github.com/NandaCoba"
+                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                >
+                  Ananda Lukman
+                </Link>
+              </p>
+              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+                <Link
+                  to="https://github.com/triioade"
+                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                >
+                  Trio Ade
+                </Link>
+              </p>
             </div>
           </div>
         </div>

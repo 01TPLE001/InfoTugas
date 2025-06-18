@@ -25,14 +25,17 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 // Komponen countdown deadline
 function Countdown({ deadline }: { deadline: string }) {
-  const [timeLeft, setTimeLeft] = useState(() => new Date(deadline).getTime() - Date.now());
+  const [timeLeft, setTimeLeft] = useState(
+    () => new Date(deadline).getTime() - Date.now()
+  );
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(new Date(deadline).getTime() - Date.now());
     }, 1000);
     return () => clearInterval(timer);
   }, [deadline]);
-  if (timeLeft <= 0) return <span className="text-red-500 text-xs">Deadline lewat</span>;
+  if (timeLeft <= 0)
+    return <span className="text-red-500 text-xs">Deadline lewat</span>;
   const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
   const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
@@ -121,15 +124,15 @@ export default function TaskPage() {
           matkul: newTask.matkul,
           link: newTask.link,
           deadline: newTask.deadline,
-          semester_id: Number(semesterId),
-          week_id: Number(weekId),
+          // HAPUS semester_id dan week_id dari body!
         },
         { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
       );
       setNewTask({ name: "", matkul: "", link: "", deadline: "" });
       fetchTasks();
-    } catch {
+    } catch (err: any) {
       setAlertMsg("Gagal menambah task");
+      console.error("Error add task:", err?.response?.data || err);
     }
   };
 
@@ -179,10 +182,13 @@ export default function TaskPage() {
   const handleDeleteTask = async () => {
     if (!deleteId) return;
     try {
-      await axios.delete(`${API_URL}/task/${semesterId}/${weekId}/${deleteId}`, {
-        headers: { Authorization: `Bearer ${Cookies.get("token")}` },
-        data: { task_id: deleteId },
-      });
+      await axios.delete(
+        `${API_URL}/task/${semesterId}/${weekId}/${deleteId}`,
+        {
+          headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+          data: { task_id: deleteId },
+        }
+      );
       setShowDeleteModal(false);
       setDeleteId(null);
       fetchTasks();
@@ -195,7 +201,7 @@ export default function TaskPage() {
   const toggleDone = (task_id: number) => {
     let updated: number[];
     if (doneTasks.includes(task_id)) {
-      updated = doneTasks.filter(id => id !== task_id);
+      updated = doneTasks.filter((id) => id !== task_id);
     } else {
       updated = [...doneTasks, task_id];
     }
@@ -204,7 +210,8 @@ export default function TaskPage() {
   };
 
   // Hitung progress
-  const progress = tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0;
+  const progress =
+    tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0;
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
@@ -240,11 +247,13 @@ export default function TaskPage() {
         <select
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
           value={newTask.matkul}
-          onChange={(e) => setNewTask((t) => ({ ...t, matkul: e.target.value }))}
+          onChange={(e) =>
+            setNewTask((t) => ({ ...t, matkul: e.target.value }))
+          }
         >
           <option value="">Pilih Mata Kuliah</option>
           {matkuls.map((matkul) => (
-            <option key={matkul.matkul_id} value={matkul.matkul_id}>
+            <option key={matkul.matkul_id} value={matkul.name}>
               {matkul.name}
             </option>
           ))}
@@ -259,7 +268,9 @@ export default function TaskPage() {
           type="date"
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
           value={newTask.deadline}
-          onChange={(e) => setNewTask((t) => ({ ...t, deadline: e.target.value }))}
+          onChange={(e) =>
+            setNewTask((t) => ({ ...t, deadline: e.target.value }))
+          }
           placeholder="Deadline"
         />
         <button
@@ -286,26 +297,34 @@ export default function TaskPage() {
                     <input
                       className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
                       value={editTask.name}
-                      onChange={(e) => setEditTask((t) => ({ ...t, name: e.target.value }))}
+                      onChange={(e) =>
+                        setEditTask((t) => ({ ...t, name: e.target.value }))
+                      }
                       placeholder="Nama Tugas"
                     />
                     <input
                       className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
                       value={editTask.matkul}
-                      onChange={(e) => setEditTask((t) => ({ ...t, matkul: e.target.value }))}
+                      onChange={(e) =>
+                        setEditTask((t) => ({ ...t, matkul: e.target.value }))
+                      }
                       placeholder="Mata Kuliah"
                     />
                     <input
                       className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
                       value={editTask.link}
-                      onChange={(e) => setEditTask((t) => ({ ...t, link: e.target.value }))}
+                      onChange={(e) =>
+                        setEditTask((t) => ({ ...t, link: e.target.value }))
+                      }
                       placeholder="Link"
                     />
                     <input
                       type="date"
                       className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
                       value={editTask.deadline}
-                      onChange={(e) => setEditTask((t) => ({ ...t, deadline: e.target.value }))}
+                      onChange={(e) =>
+                        setEditTask((t) => ({ ...t, deadline: e.target.value }))
+                      }
                       placeholder="Deadline"
                     />
                     <div className="flex gap-2 mt-2">
@@ -358,7 +377,9 @@ export default function TaskPage() {
                       }`}
                       onClick={() => toggleDone(task.task_id)}
                     >
-                      {doneTasks.includes(task.task_id) ? "Sudah Dikerjakan" : "Tandai Selesai"}
+                      {doneTasks.includes(task.task_id)
+                        ? "Sudah Dikerjakan"
+                        : "Tandai Selesai"}
                     </button>
                     <div className="flex gap-2 mt-3">
                       <button

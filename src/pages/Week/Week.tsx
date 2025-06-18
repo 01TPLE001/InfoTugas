@@ -34,9 +34,16 @@ export default function WeekPage() {
       console.error("API_URL tidak ditemukan");
       return;
     }
-    setLoading(true);
+    
+     setLoading(true);
+    const token = Cookies.get("token");
     try {
-      const res = await axios.get(`${API_URL}/week/${id}`);
+      const res = await axios.get(`${API_URL}/week/${id}`,{ 
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        } 
+      });
       const data = Array.isArray(res.data.data) ? res.data.data : [];
       setWeeks(data);
     } catch (err) {

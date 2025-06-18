@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Atom } from "react-loading-indicators";
 import { parseISO, differenceInMilliseconds } from "date-fns";
+import Cookies from "js-cookie";
 
 interface Task {
   task_id: number;
@@ -13,6 +14,7 @@ interface Task {
   link: string;
   deadline: string;
   semester_id: number;
+  status?: boolean; // status dari backend (opsional, tergantung API)
 }
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -45,72 +47,51 @@ function Countdown({ deadline }: { deadline: string }) {
   );
 }
 
-interface Assignment {
-  task_id: number;
-  done: boolean;
-}
-
-function saveAssignmentsToStorage(assignments: Assignment[]) {
-  try {
-    localStorage.setItem("assignments", JSON.stringify(assignments));
-  } catch (e) {
-    console.error("Failed to save assignments:", e);
-  }
-}
-
-function loadAssignmentsFromStorage(): Assignment[] {
-  try {
-    const data = localStorage.getItem("assignments");
-    if (!data) return [];
-    const parsed = JSON.parse(data);
-    if (Array.isArray(parsed)) return parsed;
-  } catch (e) {
-    console.error("Failed to load assignments:", e);
-  }
-  return [];
-}
-
 export default function TaskPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const { semesterId, weekId } = useParams();
 
   useEffect(() => {
     if (semesterId && weekId) fetchTasks();
-    // eslint-disable-next-line
   }, [semesterId, weekId]);
-
-  useEffect(() => {
-    setAssignments(loadAssignmentsFromStorage());
-  }, []);
 
   const fetchTasks = async () => {
     setLoading(true);
+    const token = Cookies.get("token");
     try {
-      const res = await axios.get(`${API_URL}/task/${semesterId}/${weekId}`);
+      const res = await axios.get(`${API_URL}/task/${semesterId}/${weekId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setTasks(res.data.data);
-    } catch {
+    } catch (err: any) {
       setTasks([]);
     }
     setLoading(false);
   };
 
-  // Update assignments jika user klik "Selesai"
-  const handleToggleDone = (task_id: number) => {
-    let updated = [...assignments];
-    const idx = updated.findIndex(a => a.task_id === task_id);
-    if (idx > -1) {
-      updated[idx].done = !updated[idx].done;
-    } else {
-      updated.push({ task_id, done: true });
+  // Fungsi untuk mengubah status tugas (selesai/belum) di database
+  const handleChangeStatus = async (taskId: number, status: boolean) => {
+    const token = Cookies.get("token");
+    try {
+      await axios.post(
+        `${API_URL}/task/change_status/${semesterId}/${weekId}/${taskId}`,
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      fetchTasks();
+    } catch (err) {
+      alert("Gagal mengubah status tugas");
     }
-    setAssignments(updated);
-    saveAssignmentsToStorage(updated);
   };
 
   // Hitung progress
-  const doneCount = tasks.filter(t => assignments.find(a => a.task_id === t.task_id && a.done)).length;
+  const doneCount = tasks.filter(t => t.status === true).length;
   const progress = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
 
   return (
@@ -173,18 +154,21 @@ export default function TaskPage() {
                   </span>
                   <Countdown deadline={task.deadline} />
                 </div>
-                <button
-                  className={`mt-2 px-3 py-1 rounded text-xs font-semibold ${
-                    assignments.find(a => a.task_id === task.task_id && a.done)
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-300 text-gray-700"
-                  }`}
-                  onClick={() => handleToggleDone(task.task_id)}
-                >
-                  {assignments.find(a => a.task_id === task.task_id && a.done)
-                    ? "Sudah Dikerjakan"
-                    : "Tandai Selesai"}
-                </button>
+                <div className="flex items-center gap-2 mt-2">
+<button
+  className={`mt-2 px-3 py-1 rounded text-xs font-semibold transition-all duration-200 ${
+    task.status
+      ? "bg-green-500 text-white"
+      : "bg-gray-300 text-gray-700 hover:bg-blue-500 hover:text-white"
+  }`}
+  onClick={() => handleChangeStatus(task.task_id, !task.status)}
+>
+  {task.status ? "Sudah Dikerjakan" : "Tandai Selesai"}
+</button>
+                  <span className="text-xs">
+                    {task.status ? "Selesai" : "Belum selesai"}
+                  </span>
+                </div>
               </div>
             ))
           : !loading && (
@@ -214,4 +198,3 @@ export default function TaskPage() {
     </div>
   );
 }
-
