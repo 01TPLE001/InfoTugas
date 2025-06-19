@@ -124,7 +124,7 @@ export default function EmailSidebar() {
         Semua Email
       </h2>
       {/* Form tambah email */}
-      <div className="flex gap-2 mb-4">
+      {/* <div className="flex gap-2 mb-4">
         <input
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
           value={newEmail}
@@ -137,7 +137,7 @@ export default function EmailSidebar() {
         >
           Add
         </button>
-      </div>
+      </div> */}
       {loading && (
         <ThreeDot color="#32cd32" size="medium" text="" textColor="" />
       )}
@@ -176,17 +176,17 @@ export default function EmailSidebar() {
                   <div className="font-semibold text-blue-700 dark:text-blue-300 break-all">
                     {e.email}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  {/* <div className="text-xs text-gray-500 mt-1">
                     Dibuat: {new Date(e.created_at).toLocaleString()}
-                  </div>
+                  </div> */}
                   <div className="flex gap-2 mt-3">
                     <button
-                      className="px-2 py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-all"
+                      className="px-2 w-full h-8 py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-all"
                       onClick={() => startEdit(e)}
                     >
                       Edit
                     </button>
-                    <button
+                    {/* <button
                       className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-all"
                       onClick={() => {
                         setShowDeleteModal(true);
@@ -194,7 +194,7 @@ export default function EmailSidebar() {
                       }}
                     >
                       Hapus
-                    </button>
+                    </button> */}
                   </div>
                 </>
               )}

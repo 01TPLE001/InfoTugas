@@ -14,6 +14,7 @@ interface Task {
   link: string;
   deadline: string;
   semester_id: number;
+  task_code : any;
 }
 
 interface MatkulData {
@@ -100,11 +101,20 @@ export default function TaskPage() {
   const fetchTasks = async () => {
     setLoading(true);
     try {
+      console.log(`Fetching tasks for semester ${semesterId} week ${weekId}`); // Debug log
       const res = await axios.get(`${API_URL}/task/${semesterId}/${weekId}`, {
         headers: { Authorization: `Bearer ${Cookies.get("token")}` },
       });
-      setTasks(res.data.data);
-    } catch {
+      
+      // Pastikan response data valid
+      if (res.data && Array.isArray(res.data.data)) {
+        setTasks(res.data.data);
+      } else {
+        console.warn('Invalid response format:', res.data);
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error); // Debug log
       setTasks([]);
     }
     setLoading(false);
@@ -116,6 +126,7 @@ export default function TaskPage() {
       setAlertMsg("Nama, matkul, dan deadline wajib diisi");
       return;
     }
+    
     try {
       await axios.post(
         `${API_URL}/task/${semesterId}/${weekId}`,
@@ -124,15 +135,25 @@ export default function TaskPage() {
           matkul: newTask.matkul,
           link: newTask.link,
           deadline: newTask.deadline,
-          // HAPUS semester_id dan week_id dari body!
         },
         { headers: { Authorization: `Bearer ${Cookies.get("token")}` } }
       );
+      
+      // Reset form
       setNewTask({ name: "", matkul: "", link: "", deadline: "" });
-      fetchTasks();
+      
+      // Tunggu sebentar sebelum fetch ulang (untuk memastikan database sudah update)
+
+
+      
+      // Atau alternatif: langsung tambahkan ke state tanpa fetch ulang
+      // if (response.data && response.data.data) {
+      //   setTasks(prevTasks => [...prevTasks, response.data.data]);
+      // }
+      
     } catch (err: any) {
-      setAlertMsg("Gagal menambah task");
       console.error("Error add task:", err?.response?.data || err);
+      setAlertMsg(err?.response?.data?.message || "Gagal menambah task");
     }
   };
 
@@ -154,14 +175,14 @@ export default function TaskPage() {
   };
 
   // Simpan edit
-  const saveEdit = async (task_id: number) => {
+  const saveEdit = async (semester_id : number,week_id : number,task_code: any) => {
     if (!editTask.name || !editTask.matkul || !editTask.deadline) {
       setAlertMsg("Nama, matkul, dan deadline wajib diisi");
       return;
     }
     try {
       await axios.put(
-        `${API_URL}/task/${task_id}`,
+        `${API_URL}/task/${semester_id}/${week_id}/${task_code}`,
         {
           name: editTask.name,
           matkul: editTask.matkul,
@@ -172,8 +193,14 @@ export default function TaskPage() {
       );
       setEditId(null);
       setEditTask({ name: "", matkul: "", link: "", deadline: "" });
-      fetchTasks();
-    } catch {
+      
+      // Tunggu sebentar sebelum fetch ulang
+      setTimeout(() => {
+        fetchTasks();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error updating task:', error);
       setAlertMsg("Gagal update task");
     }
   };
@@ -191,8 +218,14 @@ export default function TaskPage() {
       );
       setShowDeleteModal(false);
       setDeleteId(null);
-      fetchTasks();
-    } catch {
+      
+      // Tunggu sebentar sebelum fetch ulang
+      setTimeout(() => {
+        fetchTasks();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error deleting task:', error);
       setAlertMsg("Gagal menghapus task");
     }
   };
@@ -216,7 +249,7 @@ export default function TaskPage() {
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold mb-2 text-gray-950 dark:text-white margin">
-        Atmint Dashboard
+        Admin Dashboard
       </h1>
       <hr
         style={{
@@ -330,7 +363,7 @@ export default function TaskPage() {
                     <div className="flex gap-2 mt-2">
                       <button
                         className="px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded"
-                        onClick={() => saveEdit(task.task_id)}
+                        onClick={() => saveEdit(task.semester_id,task.week_id,task.task_code)}
                       >
                         Simpan
                       </button>
@@ -364,23 +397,8 @@ export default function TaskPage() {
                       {task.link}
                     </a>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs text-gray-400">
-                        Week: {task.week_id}
-                      </span>
                       <Countdown deadline={task.deadline} />
                     </div>
-                    <button
-                      className={`mt-2 px-3 py-1 rounded text-xs font-semibold ${
-                        doneTasks.includes(task.task_id)
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-300 text-gray-700"
-                      }`}
-                      onClick={() => toggleDone(task.task_id)}
-                    >
-                      {doneTasks.includes(task.task_id)
-                        ? "Sudah Dikerjakan"
-                        : "Tandai Selesai"}
-                    </button>
                     <div className="flex gap-2 mt-3">
                       <button
                         className="px-2 py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-all"
@@ -392,7 +410,7 @@ export default function TaskPage() {
                         className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-all"
                         onClick={() => {
                           setShowDeleteModal(true);
-                          setDeleteId(task.task_id);
+                          setDeleteId(task.task_code);
                         }}
                       >
                         Hapus

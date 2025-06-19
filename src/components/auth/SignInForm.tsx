@@ -48,10 +48,6 @@ export default function SignInForm() {
         const role = verifyRes.data?.data; // "admin" atau "user"
         Cookies.set("role", role);
 
-  console.log("Token dari login:", token);
-  console.log("Role dari /user/verify:", role);
-  console.log("Token di cookies:", Cookies.get("token"));
-  console.log("Role di cookies:", Cookies.get("role"));
 
         if (role === "admin") {
           window.location.replace("/semester");

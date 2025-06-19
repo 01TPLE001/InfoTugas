@@ -65,7 +65,7 @@ export default function WeekPage() {
     try {
       console.log("POST", { week_number: Number(newWeek), semester_id: Number(semesterId) });
       await axios.post(
-        `${API_URL}/week/`,
+        `${API_URL}/week`,
         {
           week_number: Number(newWeek),
           semester_id: Number(semesterId),

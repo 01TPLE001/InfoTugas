@@ -7,6 +7,7 @@ import AlertCard from "../../components/Alert/alert";
 interface MatkulData {
   matkul_id: string;
   name: string;
+  lecturer:string;
   created_at: string;
   updated_at: string;
 }
@@ -14,6 +15,7 @@ interface MatkulData {
 export default function MatkulSidebar() {
   const [matkuls, setMatkuls] = useState<MatkulData[]>([]);
   const [newMatkul, setNewMatkul] = useState("");
+  const [lecturer, setlecturer] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editMatkul, setEditMatkul] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,12 +54,13 @@ export default function MatkulSidebar() {
     try {
       await axios.post(
         `${API_URL}/matkul`,
-        { name: newMatkul },
+        { name: newMatkul,lecturer },
         {
           headers: { Authorization: `Bearer ${Cookies.get("token")}` }
         }
       );
       setNewMatkul("");
+      setlecturer("");
       fetchMatkuls();
     } catch (err: any) {
       setAlertMsg(
@@ -131,6 +134,12 @@ export default function MatkulSidebar() {
           onChange={e => setNewMatkul(e.target.value)}
           placeholder="Tambah Mata Kuliah"
         />
+        <input
+          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
+          value={lecturer}
+          onChange={e => setlecturer(e.target.value)}
+          placeholder="Dosen"
+        />
         <button
           className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-1 rounded"
           onClick={handleAddMatkul}
@@ -173,8 +182,9 @@ export default function MatkulSidebar() {
                 </div>
               ) : (
                 <>
-                  <div className="font-semibold text-blue-700 dark:text-blue-300 break-all">
-                    {m.name}
+                  <div className="font-semibold text-blue-700 dark:text-blue-300 break-all grid space-y-2">
+                    <p>{m.name}</p>
+                    <p className=" text-sm text-black">{m.lecturer}</p>
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     Dibuat: {new Date(m.created_at).toLocaleString()}

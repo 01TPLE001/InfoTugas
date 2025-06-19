@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
+import { jwtDecode } from "jwt-decode";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -25,16 +26,18 @@ const AppHeader: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = Cookies.get("token");
-    const role = Cookies.get("role");
+    const token : any = Cookies.get("token");
+    const role : any = jwtDecode(token)
+
+    console.log(role.role)
 
     if (!token) {
       navigate("/", { replace: true });
     } else {
       // Jika token ada, redirect berdasarkan role
-      if (role === "admin") {
+      if (role.role === "admin") {
         navigate("/semester", { replace: true });
-      } else if (role === "user") {
+      } else if (role.role === "user") {
         navigate("/semester-user", { replace: true });
       }
     }
@@ -100,10 +103,10 @@ const AppHeader: React.FC = () => {
             className="flex items-center gap-3 lg:hidden cursor-pointer"
             onClick={() => {
               const token = Cookies.get("token");
-              const role = Cookies.get("role");
-              if (token && role === "admin") {
+              const role : any = jwtDecode("role");
+              if (token && role.role === "admin") {
                 navigate("/semester");
-              } else if (token && role === "user") {
+              } else if (token && role.role === "user") {
                 navigate("/semester-user");
               } else {
                 navigate("/");
@@ -130,28 +133,28 @@ const AppHeader: React.FC = () => {
             className="hidden lg:flex items-center gap-3 cursor-pointer"
             onClick={() => {
               const token = Cookies.get("token");
-              const role = Cookies.get("role");
-              if (token && role === "admin") {
+              const role : any = jwtDecode("role");
+              if (token && role.role === "admin") {
                 navigate("/semester");
-              } else if (token && role === "user") {
+              } else if (token && role.role === "user") {
                 navigate("/semester-user");
               } else {
                 navigate("/");
               }
             }}
           >
-            <img
+            {/* <img
               className="dark:hidden"
               src="./images/logo/auth-logo.svg"
               alt="Logo"
               style={{ width: "40px", height: "40px" }}
-            />
-            <img
+            /> */}
+            {/* <img
               className="hidden dark:block"
               src="./images/logo/auth-logo.svg"
               alt="Logo"
               style={{ width: "40px", height: "40px" }}
-            />
+            /> */}
             <span className="text-xl font-bold text-gray-800 dark:text-white">
               Info Tugas
             </span>
@@ -191,6 +194,10 @@ const AppHeader: React.FC = () => {
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
             <Link
+              onClick={() => { 
+                Cookies.remove("token")
+                Cookies.remove("role")
+               }}
               to="/signin"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >

@@ -26,10 +26,12 @@ export default function App() {
         {/* Public Routes */}
         <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
-
+        
         {/* Protected Routes inside Dashboard Layout */}
         <Route element={<AppLayout />}>
           <Route path="/email-user" element={<EmailSidebarUser />} />
+          
+          {/* Admin Routes */}
           <Route
             path="/semester"
             element={
@@ -41,7 +43,7 @@ export default function App() {
           <Route
             path="/week"
             element={
-              <ProtectedRoute> 
+              <ProtectedRoute>
                 <WeekSidebar />
               </ProtectedRoute>
             }
@@ -78,8 +80,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* user page */}
+          
+          {/* User Routes */}
           <Route
             path="/semester-user"
             element={
@@ -104,13 +106,13 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
+          
           {/* Non-protected pages inside layout */}
           <Route path="/profile" element={<UserProfiles />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/blank" element={<Blank />} />
-        </Route>user
-
+        </Route>
+        
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </Routes>

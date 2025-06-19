@@ -154,9 +154,9 @@ export default function TaskPage() {
                   </span>
                   <Countdown deadline={task.deadline} />
                 </div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="items-center gap-2 mt-2 grid">
 <button
-  className={`mt-2 px-3 py-1 rounded text-xs font-semibold transition-all duration-200 ${
+  className={`mt-2 px-3 py-1 w-full rounded text-xs h-10 font-semibold transition-all duration-200 ${
     task.status
       ? "bg-green-500 text-white"
       : "bg-gray-300 text-gray-700 hover:bg-blue-500 hover:text-white"
@@ -165,7 +165,7 @@ export default function TaskPage() {
 >
   {task.status ? "Sudah Dikerjakan" : "Tandai Selesai"}
 </button>
-                  <span className="text-xs">
+                  <span className="text-sm text-end">
                     {task.status ? "Selesai" : "Belum selesai"}
                   </span>
                 </div>
