@@ -348,14 +348,12 @@ const AppSidebar: React.FC = () => {
               <img
                 className="dark:hidden"
                 src="/images/logo/auth-logo.svg"
-                alt="Logo"
                 width={50}
                 height={40}
               />
               <img
                 className="hidden dark:block"
                 src="/images/logo/auth-logo.svg"
-                alt="Logo"
                 width={50}
                 height={50}
               />
@@ -366,7 +364,6 @@ const AppSidebar: React.FC = () => {
           ) : (
             <img
               src="/images/logo/auth-logo.svg"
-              alt="Logo"
               width={32}
               height={32}
             />

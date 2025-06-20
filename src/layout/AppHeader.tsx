@@ -105,7 +105,7 @@ useEffect(() => {
               }
             }}
           >
-            <img
+            {/* <img
               className="dark:hidden"
               src="./images/logo/auth-logo.svg"
               alt="Logo"
@@ -116,7 +116,7 @@ useEffect(() => {
               src="./images/logo/auth-logo.svg"
               alt="Logo"
               style={{ width: "40px", height: "40px" }}
-            />
+            /> */}
             <span className="text-lg font-bold text-gray-800 dark:text-white">
               Info Tugas
             </span>
