@@ -141,6 +141,7 @@ export default function TaskPage() {
       
       // Reset form
       setNewTask({ name: "", matkul: "", link: "", deadline: "" });
+      window.location.reload()
       
       // Tunggu sebentar sebelum fetch ulang (untuk memastikan database sudah update)
 

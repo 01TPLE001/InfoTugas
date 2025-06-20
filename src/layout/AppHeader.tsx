@@ -25,35 +25,27 @@ const AppHeader: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const token : any = Cookies.get("token");
-    const role : any = jwtDecode(token)
+  // Masalah cihuyy
+useEffect(() => {
+  const token: any = Cookies.get("token");
+  if (!token) {
+    navigate("/", { replace: true });
+  }
 
-    console.log(role.role)
-
-    if (!token) {
-      navigate("/", { replace: true });
-    } else {
-      // Jika token ada, redirect berdasarkan role
-      if (role.role === "admin") {
-        navigate("/semester", { replace: true });
-      } else if (role.role === "user") {
-        navigate("/semester-user", { replace: true });
-      }
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+      event.preventDefault();
+      inputRef.current?.focus();
     }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-        event.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
+  };
 
-    document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
 
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">

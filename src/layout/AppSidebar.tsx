@@ -328,7 +328,7 @@ const AppSidebar: React.FC = () => {
       >
 
         
-        <div
+ <div
   className="flex items-center cursor-pointer"
   onClick={() => {
     const token = Cookies.get("token");
@@ -342,6 +342,7 @@ const AppSidebar: React.FC = () => {
     }
   }}
 >
+
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img

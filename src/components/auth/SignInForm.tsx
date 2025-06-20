@@ -26,7 +26,7 @@ export default function SignInForm() {
       const res = await axios.post(
         `${API_URL}/user/auth/login`,
         {
-          nim: Number(nim),
+          nim: nim,
           password: password,
         },
         {
