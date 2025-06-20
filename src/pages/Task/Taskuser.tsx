@@ -115,12 +115,12 @@ export default function TaskPage() {
         ></div>
       </div>
 
-      {loading && (
+      {/* {loading && (
         <Atom
           color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
           text="LOADING"
         />
-      )}
+      )} */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {tasks.length > 0
