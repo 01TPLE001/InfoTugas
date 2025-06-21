@@ -68,14 +68,16 @@ export default function SignInForm() {
         setError("Login gagal");
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message?.toLowerCase() || "";
-      if (msg.includes("password")) {
-        setError("Password salah");
-      } else if (msg.includes("nim") || msg.includes("user")) {
-        setError("User tidak ditemukan");
-      } else {
-        setError("Terjadi kesalahan");
-      }
+      //const msg = err.response?.data?.message?.toLowerCase() || "";
+      setError(err);
+      console.error(err);
+      // if (msg.includes("password")) {
+      //   setError("Password salah");
+      // } else if (msg.includes("nim") || msg.includes("user")) {
+      //   setError("User tidak ditemukan");
+      // } else {
+      //   setError("Terjadi kesalahan");
+      // }
     }
 
     setLoading(false);

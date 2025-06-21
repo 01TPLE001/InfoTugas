@@ -6,6 +6,7 @@ import { ThreeDot } from "react-loading-indicators";
 interface MatkulData {
   matkul_id: string;
   name: string;
+  lecturer: string; 
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,9 @@ export default function MatkulSidebar() {
             >
               <div className="font-semibold text-blue-700 dark:text-blue-300 break-all">
                 {m.name}
+              </div>
+                            <div className="font-semibold text-blue-700 dark:text-blue-300 break-all">
+                {m.lecturer}
               </div>
               <div className="text-xs text-gray-500 mt-1">
                 Dibuat: {new Date(m.created_at).toLocaleString()}

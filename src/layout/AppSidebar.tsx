@@ -8,7 +8,7 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  MailIcon
+  MailIcon,
   // ListIcon,
   // PageIcon,
   // PieChartIcon,
@@ -25,56 +25,56 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-  const role = Cookies.get("role");
+const role = Cookies.get("role");
 
 const navItems: NavItem[] = [
-{
-      icon: <GridIcon />,
-      name: "SEMESTER",
-      path: role === "admin" ? "/semester" : "/semester-user",
-      subItems: [
-        {
-          name: "Pilih Semester",
-          path: role === "admin" ? "/semester" : "/semester-user",
-          pro: false,
-        },
-      ],
-    },
+  {
+    icon: <GridIcon />,
+    name: "SEMESTER",
+    path: role === "admin" ? "/semester" : "/semester-user",
+    subItems: [
+      {
+        name: "Pilih Semester",
+        path: role === "admin" ? "/semester" : "/semester-user",
+        pro: false,
+      },
+    ],
+  },
   {
     name: "WEEK",
     icon: <BoxCubeIcon />,
     path: "/week",
     subItems: [{ name: "Pilih Minggu", path: "/week", pro: false }],
   },
-   ...(role === "admin"
-      ? [
-          {
-            icon: <MailIcon />,
-            name: "Email",
-            path: "/email",
-          },
-          {
-            icon: <BoxCubeIcon />,
-            name: "Matkul",
-            path: "/matkul",
-          },
-        ]
-      : []),
-  ];
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Matkul",
+    path: role === "admin" ? "/matkul" : "/matkul-user",
+  },
 
+  ...(role === "admin"
+    ? [
+        {
+          icon: <MailIcon />,
+          name: "Email",
+          path: "/email",
+        },
+      ]
+    : []),
+];
+// {
+//   name: "Pages",
+//   icon: <PageIcon />,
+//   subItems: [
+//     { name: "Blank Page", path: "/blank", pro: false },
+//     { name: "404 Error", path: "/error-404", pro: false },
+//   ],
+// },
+// {
+//   icon: <CalenderIcon />,
+//   name: "Calendar",
+//   path: "/calendar",
+// },
 
 const othersItems: NavItem[] = [
   // {
@@ -326,23 +326,20 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-
-        
- <div
-  className="flex items-center cursor-pointer"
-  onClick={() => {
-    const token = Cookies.get("token");
-    const role = Cookies.get("role");
-    if (token && role === "admin") {
-      navigate("/semester");
-    } else if (token && role === "user") {
-      navigate("/semester-user");
-    } else {
-      navigate("/");
-    }
-  }}
->
-
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => {
+            const token = Cookies.get("token");
+            const role = Cookies.get("role");
+            if (token && role === "admin") {
+              navigate("/semester");
+            } else if (token && role === "user") {
+              navigate("/semester-user");
+            } else {
+              navigate("/");
+            }
+          }}
+        >
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img
@@ -362,11 +359,7 @@ const AppSidebar: React.FC = () => {
               </span>
             </>
           ) : (
-            <img
-              src="/images/logo/auth-logo.svg"
-              width={32}
-              height={32}
-            />
+            <img src="/images/logo/auth-logo.svg" width={32} height={32} />
           )}
         </div>
       </div>
@@ -414,4 +407,3 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
-

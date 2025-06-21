@@ -4,239 +4,259 @@ import Cookies from "js-cookie";
 import { ThreeDot } from "react-loading-indicators";
 import AlertCard from "../../components/Alert/alert";
 
+interface UserData {
+  user_id: string;
+  nim: string;
+  role: string;
+}
+
 interface EmailData {
   email_id: string;
   email: string;
-  created_at: string;
-  updated_at: string;
+  user_id: string;
+}
+
+interface MemberData {
+  user_id: string;
+  nim: string;
+  role: string;
+  email: string | null;
+  email_id: string | null;
 }
 
 export default function EmailSidebar() {
-  const [emails, setEmails] = useState<EmailData[]>([]);
-  const [newEmail, setNewEmail] = useState("");
-  const [editId, setEditId] = useState<string | null>(null);
-  const [editEmail, setEditEmail] = useState("");
+  const [members, setMembers] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // State untuk tambah user
+  const [newNim, setNewNim] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  // State untuk edit email
+  const [editEmailId, setEditEmailId] = useState<string | null>(null);
+  const [editEmailValue, setEditEmailValue] = useState("");
+  const [editUserId, setEditUserId] = useState<string | null>(null);
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    fetchEmails();
+    fetchMembers();
   }, []);
 
-  const fetchEmails = async () => {
+  const fetchMembers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/email`, {
-        headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+      const [userRes, emailRes] = await Promise.all([
+        axios.get(`${API_URL}/user`, {
+          headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+        }),
+        axios.get(`${API_URL}/email`, {
+          headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+        }),
+      ]);
+      const users: UserData[] = userRes.data.data;
+      const emails: EmailData[] = emailRes.data.data;
+
+      // Gabungkan user dengan email berdasarkan user_id
+      const members: MemberData[] = users.map((u) => {
+        const emailObj = emails.find((e) => e.user_id === u.user_id);
+        return {
+          user_id: u.user_id,
+          nim: u.nim,
+          role: u.role,
+          email: emailObj ? emailObj.email : null,
+          email_id: emailObj ? emailObj.email_id : null,
+        };
       });
-      if (Array.isArray(res.data.data)) {
-        setEmails(res.data.data);
-      } else {
-        setEmails([]);
-      }
+      setMembers(members);
     } catch (error) {
-      setEmails([]);
-      setAlertMsg("Gagal mengambil data email");
+      setMembers([]);
+      setAlertMsg("Gagal mengambil data anggota");
     }
     setLoading(false);
   };
 
-  const handleAddEmail = async () => {
-    if (!newEmail) {
-      setAlertMsg("Email tidak boleh kosong");
+  // Tambah user baru
+  const handleAddUser = async () => {
+    if (!newNim || !newEmail || !newPassword) {
+      setAlertMsg("NIM, Email, dan Password tidak boleh kosong");
       return;
     }
-    // Validasi sederhana email
     if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(newEmail)) {
       setAlertMsg("Format email tidak valid");
       return;
     }
     try {
       await axios.post(
-        `${API_URL}/email`,
-        { email: newEmail },
+        `${API_URL}/user/auth/register`,
+        { nim: newNim, email: newEmail, password: newPassword },
         {
           headers: { Authorization: `Bearer ${Cookies.get("token")}` },
         }
       );
+      setNewNim("");
       setNewEmail("");
-      fetchEmails();
+      setNewPassword("");
+      fetchMembers();
     } catch (err: any) {
-      setAlertMsg(err?.response?.data?.message || "Gagal menambah email");
+      setAlertMsg(err?.response?.data?.message || "Gagal menambah user");
     }
   };
 
-  const startEdit = (email: EmailData) => {
-    setEditId(email.email_id);
-    setEditEmail(email.email);
+  // Mulai edit email
+  const startEditEmail = (member: MemberData) => {
+    setEditEmailId(member.email_id);
+    setEditUserId(member.user_id);
+    setEditEmailValue(member.email || "");
   };
 
-  const cancelEdit = () => {
-    setEditId(null);
-    setEditEmail("");
-  };
-
-  const saveEdit = async (email_id: string) => {
-    if (!editEmail) {
+  // Simpan email (edit atau tambah)
+  const saveEditEmail = async () => {
+    if (!editUserId) return;
+    if (!editEmailValue) {
       setAlertMsg("Email tidak boleh kosong");
       return;
     }
-    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(editEmail)) {
+    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(editEmailValue)) {
       setAlertMsg("Format email tidak valid");
       return;
     }
     try {
-      await axios.put(
-        `${API_URL}/email/${email_id}`,
-        { email: editEmail },
-        {
-          headers: { Authorization: `Bearer ${Cookies.get("token")}` },
-        }
-      );
-      setEditId(null);
-      setEditEmail("");
-      fetchEmails();
+      if (editEmailId) {
+        // Update email
+        await axios.put(
+          `${API_URL}/email/${editEmailId}`,
+          { email: editEmailValue },
+          {
+            headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+          }
+        );
+      } else {
+        // Tambah email baru untuk user ini
+        await axios.post(
+          `${API_URL}/email`,
+          { email: editEmailValue, user_id: editUserId },
+          {
+            headers: { Authorization: `Bearer ${Cookies.get("token")}` },
+          }
+        );
+      }
+      setEditEmailId(null);
+      setEditUserId(null);
+      setEditEmailValue("");
+      fetchMembers();
     } catch (err: any) {
-      setAlertMsg(err?.response?.data?.message || "Gagal update email");
+      setAlertMsg(err?.response?.data?.message || "Gagal menyimpan email");
     }
   };
 
-  const handleDeleteEmail = async () => {
-    if (!deleteId) return;
-    try {
-      await axios.delete(`${API_URL}/email/${deleteId}`, {
-        headers: { Authorization: `Bearer ${Cookies.get("token")}` },
-      });
-      setShowDeleteModal(false);
-      setDeleteId(null);
-      fetchEmails();
-    } catch (err: any) {
-      setAlertMsg(err?.response?.data?.message || "Gagal menghapus email");
-    }
+  const cancelEditEmail = () => {
+    setEditEmailId(null);
+    setEditUserId(null);
+    setEditEmailValue("");
   };
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
       <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-        Semua Email
+        Semua Anggota
       </h2>
-      {/* Form tambah email */}
-      {/* <div className="flex gap-2 mb-4">
+      {/* Form tambah user */}
+
+      <div className="flex gap-2 mb-4 flex-wrap">
         <input
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          placeholder="Tambah Email"
+          placeholder="Email"
+        />
+        <input
+          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
+          value={newNim}
+          onChange={(e) => setNewNim(e.target.value)}
+          placeholder="NIM"
+        />
+        <input
+          type="password"
+          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="Password"
         />
         <button
           className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-1 rounded"
-          onClick={handleAddEmail}
+          onClick={handleAddUser}
         >
-          Add
+          Tambah User
         </button>
-      </div> */}
+      </div>
       {loading && (
         <ThreeDot color="#32cd32" size="medium" text="" textColor="" />
       )}
-      {emails.length > 0 ? (
+      {members.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {emails.map((e) => (
+          {members.map((m) => (
             <div
-              key={e.email_id}
+              key={m.user_id}
               className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 rounded shadow transition-all"
             >
-              {editId === e.email_id ? (
-                <div className="flex flex-col gap-2">
-                  <input
-                    className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
-                    value={editEmail}
-                    onChange={(ev) => setEditEmail(ev.target.value)}
-                    placeholder="Email"
-                  />
-                  <div className="flex gap-2 mt-2">
+              <div className="font-semibold text-blue-700 dark:text-blue-300 break-all">
+                NIM: {m.nim}
+              </div>
+              <div className="text-sm text-gray-900 dark:text-gray-100 break-all">
+                Email:{" "}
+                {editUserId === m.user_id ? (
+                  <span>
+                    <input
+                      className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-2 py-1 rounded"
+                      value={editEmailValue}
+                      onChange={(e) => setEditEmailValue(e.target.value)}
+                      placeholder="Email"
+                    />
                     <button
-                      className="px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded"
-                      onClick={() => saveEdit(e.email_id)}
+                      className="ml-2 px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded"
+                      onClick={saveEditEmail}
                     >
                       Simpan
                     </button>
                     <button
-                      className="px-2 py-1 text-xs bg-gray-400 hover:bg-gray-500 text-white rounded"
-                      onClick={cancelEdit}
+                      className="ml-2 px-2 py-1 text-xs bg-gray-400 hover:bg-gray-500 text-white rounded"
+                      onClick={cancelEditEmail}
                     >
                       Batal
                     </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="font-semibold text-blue-700 dark:text-blue-300 break-all">
-                    {e.email}
-                  </div>
-                  {/* <div className="text-xs text-gray-500 mt-1">
-                    Dibuat: {new Date(e.created_at).toLocaleString()}
-                  </div> */}
-                  <div className="flex gap-2 mt-3">
+                  </span>
+                ) : (
+                  <>
+                    {m.email || (
+                      <span className="italic text-gray-400">
+                        Belum ada email
+                      </span>
+                    )}
                     <button
-                      className="px-2 w-full h-8 py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-all"
-                      onClick={() => startEdit(e)}
+                      className="ml-2 px-2 py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                      onClick={() => startEditEmail(m)}
                     >
                       Edit
                     </button>
-                    {/* <button
-                      className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-all"
-                      onClick={() => {
-                        setShowDeleteModal(true);
-                        setDeleteId(e.email_id);
-                      }}
-                    >
-                      Hapus
-                    </button> */}
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Role: {m.role}
+              </div>
             </div>
           ))}
         </div>
       ) : (
         !loading && (
           <div className="text-gray-500 dark:text-gray-400">
-            Belum ada email tersedia.
+            Belum ada anggota tersedia.
           </div>
         )
       )}
-
-      {/* Modal Konfirmasi Hapus */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 animate-fade-in-up min-w-[300px]">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-              Konfirmasi Hapus
-            </h3>
-            <p className="mb-4 text-gray-700 dark:text-gray-300">
-              Apakah kamu yakin ingin menghapus email ini?
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Batal
-              </button>
-              <button
-                className="px-4 py-1 rounded bg-red-500 hover:bg-red-600 text-white"
-                onClick={handleDeleteEmail}
-              >
-                Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <AlertCard
         open={!!alertMsg}
         message={alertMsg}

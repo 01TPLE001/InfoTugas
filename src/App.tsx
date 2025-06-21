@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
-import TaskPage from "./pages/task/Task";
+import TaskPage from "./pages/Task/task";
 import Calendar from "./pages/Calendar";
 import SemesterUser from "./pages/Semester/SemesterUser";
 import Blank from "./pages/Blank";
@@ -12,11 +12,12 @@ import Semester from "./pages/Semester/Semester";
 import WeekPage from "./pages/Week/Week";
 import WeekSidebar from "./pages/Week/WeekSidebar";
 import WeekUserPage from "./pages/Week/Weekuser";
-import TaskUserPage from "./pages/task/Taskuser";
+import TaskUserPage from "./pages/Task/Taskuser";
 import EmailSidebar from "./pages/Email/EmailSidebar";
 import MatkulSidebar from "./pages/Matkul/MatkulSidebar";
 import ProtectedRoute from "./protectroute";
 import EmailSidebarUser from "./pages/Email/EmailSidebarUser";
+import MatkulSidebarUser from "./pages/Matkul/MatkulSIdebarUser";
 
 export default function App() {
   return (
@@ -103,6 +104,15 @@ export default function App() {
             element={
               <ProtectedRoute role="user">
                 <TaskUserPage />
+              </ProtectedRoute>
+            }
+          />
+
+                    <Route
+            path="/matkul-user"
+            element={
+              <ProtectedRoute role="user">
+                <MatkulSidebarUser />
               </ProtectedRoute>
             }
           />
