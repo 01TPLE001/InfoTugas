@@ -1,11 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
 import NotFound from "./pages/OtherPage/NotFound";
-import UserProfiles from "./pages/UserProfiles";
 import TaskPage from "./pages/Task/task";
-import Calendar from "./pages/Calendar";
 import SemesterUser from "./pages/Semester/SemesterUser";
-import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Semester from "./pages/Semester/Semester";
@@ -118,9 +115,9 @@ export default function App() {
           />
           
           {/* Non-protected pages inside layout */}
-          <Route path="/profile" element={<UserProfiles />} />
+          {/* <Route path="/profile" element={<UserProfiles />} />
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/blank" element={<Blank />} />
+          <Route path="/blank" element={<Blank />} /> */}
         </Route>
         
         {/* Fallback */}

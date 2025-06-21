@@ -244,8 +244,11 @@ export default function TaskPage() {
   };
 
   // Hitung progress
-  const progress =
-    tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0;
+const expiredCount = tasks.filter(
+  (t) => new Date(t.deadline).getTime() < Date.now()
+).length;
+const expiredProgress =
+  tasks.length > 0 ? Math.round((expiredCount / tasks.length) * 100) : 0;
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 min-h-screen">
@@ -259,16 +262,21 @@ export default function TaskPage() {
           backgroundColor: "#333",
         }}
       />
-      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white flex items-center justify-between">
-        Daftar Tugas
-        <span className="ml-4 text-sm text-blue-600">{progress}% selesai</span>
-      </h2>
-      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-        <div
-          className="bg-blue-500 h-2.5 rounded-full transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
+
+
+
+<h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white flex items-center justify-between">
+  Daftar Tugas
+  <span className="ml-4 text-sm text-red-600 dark:text-red-400">
+    {expiredProgress}% Tugas Kadaluarsa
+  </span>
+</h2>
+<div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+  <div
+    className="bg-red-500 h-2.5 rounded-full transition-all duration-300"
+    style={{ width: `${expiredProgress}%` }}
+  ></div>
+</div>
 
       {/* Form tambah task */}
       <div className="flex flex-col md:flex-row gap-2 mb-4">
