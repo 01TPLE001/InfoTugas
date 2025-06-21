@@ -100,7 +100,7 @@ export default function Semester() {
                 onClick={() => navigate(`/week-user/${s.semester_id}`)}
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-300">
                     Semester {s.semester_number}
                   </h3>
                   <span className="text-xs text-blue-500">Lihat Week</span>

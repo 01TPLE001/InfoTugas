@@ -15,6 +15,7 @@ import {
   // PlugInIcon,
   // TableIcon,
   // UserCircleIcon,
+  TaskIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -30,7 +31,7 @@ const role = Cookies.get("role");
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "SEMESTER",
+    name: "Semester",
     path: role === "admin" ? "/semester" : "/semester-user",
     subItems: [
       {
@@ -41,13 +42,13 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    name: "WEEK",
+    name: "Week / Pertemuan",
     icon: <BoxCubeIcon />,
     path: "/week",
     subItems: [{ name: "Pilih Minggu", path: "/week", pro: false }],
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <TaskIcon />,
     name: "Matkul",
     path: role === "admin" ? "/matkul" : "/matkul-user",
   },
